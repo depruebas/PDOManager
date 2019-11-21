@@ -59,7 +59,8 @@
       $data['query'] = "Select staff_id, first_name, last_name, email, username, password From staff";
       $data['params'] = array();
 
-      $rows = PDOClass::ExecuteQuery( $data);
+      $rows = PDOClass::ExecuteQuery( $data);$data['query'] = "Select staff_id, first_name, last_name, email, username, password From staff";
+      $data['params'] = array();
 
       print_r( $rows);
 
