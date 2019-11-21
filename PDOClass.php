@@ -1,6 +1,8 @@
 <?php
 
 /*
+**
+**
   Clase de conexión a bbddd con drivers PDO. 
   Lista de drivers PDO https://www.php.net/manual/es/pdo.drivers.php
   
@@ -61,8 +63,9 @@
 
 
     Todos los metodos tiene una gestion de errores
-
     
+**
+**   
 */
 class PDOClass
 {
