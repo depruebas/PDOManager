@@ -9,12 +9,13 @@ The way to use it in a PHP program is to add the PDOClass.php file to the beginn
 Example:
 
 // Array de configuración
-<code>$config = array(
-  'dsn' => 'mysql:host=localhost;dbname=sakila;charset=utf8',
-  'username' => 'devuser',
-  'password' => 'mysql',
+<br>
+<code>$config = array(<br>
+  'dsn' => 'mysql:host=localhost;dbname=sakila;charset=utf8',<br>
+  'username' => 'devuser',<br>
+  'password' => 'mysql',<br>
 );
-</code>
+</code><br>
 // To make the connection to the bbdd
 $connection = PDOClass::Connection ( $config);
 
