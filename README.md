@@ -16,7 +16,6 @@ $config = array(
   'password' => 'mysql',<br><br>
 );
 ```
-<br><br>
 // To make the connection to the bbdd
 ```
 $connection = PDOClass::Connection ( $config);
@@ -41,7 +40,7 @@ $connection = null;
 
 The results are expressed in an array.
 $rows will have the following outputs:
-
+```
 (
   [success] => 1
   [data] => Array
@@ -60,7 +59,7 @@ $rows will have the following outputs:
 
   [count] => 1
 )
-
+```
 A array with three positions:
 - success:  true (if OK) or false (if error)
 - data: a array with the query results
