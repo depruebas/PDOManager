@@ -1,7 +1,7 @@
 # PDOManager
 Class and example of data access through PDO in PHP
 
-Connection class to bbdd with PDO drivers.
+Connection class to bbdd with PDO drivers.<br>
 Driver List: https://www.php.net/manual/es/pdo.drivers.php
 
 The way to use it in a PHP program is to add the PDOClass.php file to the beginning of the file and call the methods directly. As it is a static class it is not necessary to declare the variables a direct call can be made.
@@ -9,13 +9,13 @@ The way to use it in a PHP program is to add the PDOClass.php file to the beginn
 Example:
 
 // Array de configuración
-<br>
-<code>$config = array(<br>
-  'dsn' => 'mysql:host=localhost;dbname=sakila;charset=utf8',<br>
-  'username' => 'devuser',<br>
-  'password' => 'mysql',<br>
+<br><br>
+<code>$config = array(<br><br>
+  'dsn' => 'mysql:host=localhost;dbname=sakila;charset=utf8',<br><br>
+  'username' => 'devuser',<br><br>
+  'password' => 'mysql',<br><br>
 );
-</code><br>
+</code><br><br>
 // To make the connection to the bbdd
 $connection = PDOClass::Connection ( $config);
 
