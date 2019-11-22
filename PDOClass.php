@@ -3,74 +3,71 @@
 /*
 **
 **
-  Clase de conexión a bbddd con drivers PDO. 
-  Lista de drivers PDO https://www.php.net/manual/es/pdo.drivers.php
-  
-  La forma de utilizarla en un programa PHP es añadir el fichero PDOClass.php al principio del fichero y 
-  llamar a los métodos directamente. Como es una clase estatica no es necesario declar las variables se puede hacer una llamada directa.
+  Connection class to bbdd with PDO drivers.
+  Driver List: https://www.php.net/manual/es/pdo.drivers.php
 
-  Por ejemplo:
+  The way to use it in a PHP program is to add the PDOClass.php file to the beginning of the file and call the methods directly. As it is a static class it is not necessary to declare the variables a direct call can be made.
 
-    # Array de configuración
+  Example:
 
-    $config = array(
-      'dsn' => 'mysql:host=localhost;dbname=sakila;charset=utf8',
-      'username' => 'devuser',
-      'password' => 'mysql',
-    );
+  # Array de configuración
+  $config = array(
+    'dsn' => 'mysql:host=localhost;dbname=sakila;charset=utf8',
+    'username' => 'devuser',
+    'password' => 'mysql',
+  );
 
-    # Realizamos la conexion
-    $connection = PDOClass::Connection ( $config);
-    
+  # To make the connection to the bbdd
+  $connection = PDOClass::Connection ( $config);
 
-    # Preparamos los parametros para una sentencia SELECT:
-    #   conexion, query y parametros 
-    $data['connection'] = $connection['data'];
-    $data['query'] = "Select staff_id, first_name, last_name, email, username, password From staff where staff_id = ?";
-    $data['params'] = array( '11');
+  # Prepare the parameters for a SELECT statement
+  # We have to send in the connection array the values for connection, 
+  # query and parameters
+  $data['connection'] = $connection['data'];
+  $data['query'] = "Select staff_id, first_name, last_name, email, username,  
+                      password From staff where staff_id = ?";
+  $data['params'] = array( '11');
 
-    # Ejecutamos la consulta y recojemos los resultados en una variable
-    $rows = PDOClass::ExecuteQuery( $data);
+  # Execute the query and return results in rows variable
+  $rows = PDOClass::ExecuteQuery( $data);
 
-    # Eliminamos la conexión
-    $connection = null;
+  # Delete connection
+  $connection = null;
 
-    Los resultados se expresan en un array, asi que en $rows tendra la siguiente salidas:
+  The results are expressed in an array.
+  $rows will have the following outputs:
 
-    (
-      [success] => 1
-      [data] => Array
+  (
+    [success] => 1
+    [data] => Array
+      (
+        [0] => Array
           (
-              [0] => Array
-                  (
-                      [staff_id] => 11
-                      [first_name] => Juan
-                      [last_name] => Sin Miedo33
-                      [email] => 
-                      [username] => juan
-                      [password] => 
-                  )
-
+            [staff_id] => 11
+            [first_name] => Juan
+            [last_name] => Sin Miedo33
+            [email] => 
+            [username] => juan
+            [password] => 
           )
 
-      [count] => 1
-    )
+      )
 
-    Un array con tres posiciones:
-      - success:  true o false dependiendo si hay error o no
-      - data: un array con el resultado de la consulta
-      - count: total de registros obtenido
+    [count] => 1
+  )
 
+  A array with three positions:
+  - success:  true (if OK) or false (if error)
+  - data: a array with the query results
+  - count: it's the number total of records of the query
 
-    Todos los metodos tiene una gestion de errores
-    
 **
 **   
 */
 class PDOClass
 {
 
-  # ruta para dejar los logs cuando se generan errores  
+  # Ruta para dejar los logs cuando se generan errores, por defecto el directorio de trabajo
   static protected $pathLogs = './';
 
   function __construct() {}
@@ -82,6 +79,7 @@ class PDOClass
     # Si el array de configuración viene vacio devolvemos un error y lo guardamos en el LOG
     if ( empty( $config))
     {
+      # Si el array de configuracion viene vacio devolvemos un error y lo grabamos en el fichero de errores.
       error_log( date("Y-m-d H:i:s") . " - Config file empty \n", 3, static::$pathLogs."db_error.log");
       $return = array(
         'success' => false,
@@ -96,13 +94,13 @@ class PDOClass
       $conn = new PDO( $config['dsn'], $config['username'], $config['password']);
       $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-      # Devolvemos success=true y la conexión
+      # Devolvemos success=true y la conexión a la base de datos
       return ( array( 'success' => true, 'data' => $conn));
 
     } 
     catch (PDOException $e)
     {
-      # SI obtenemos un error lo escribimos en un log y devolvemos success=false y el error
+      # Si obtenemos un error lo escribimos en un log de errores y devolvemos success=false y el error
       $_error = print_r( $e->getTrace(), true) . "\n" . $e->getMessage();
 
       error_log( date("Y-m-d H:i:s") . " - " . $_error . "\n", 3, static::$pathLogs."db_error.log");
@@ -117,27 +115,40 @@ class PDOClass
 
   # Función para ejecutar consultas (select)
   # Recibe un array de parametros:
+  # 
   #    $data['connection'] = Conexion;
   #    $data['query'] = Consulta;
   #    $data['params'] = Array de parametros;
   #
   public static function ExecuteQuery( $params = array())
   {
-
+    # Recibimos la conexión por parametro y la ponemos en una variable
     $db_conn = $params['connection'];
 
     try
     {
+      # Preparamos la sentencia que queremos ejecutar que se pasa en el array params
       $stmt = $db_conn->prepare( $params['query']);
+
+      # Asignamos los parametros a la sentecia. Si no tiene parametros tendriamos que pasar un array vacio ( array() )
       $stmt->execute( $params['params'] );
+
+      # Ejecutamos la sentencia y devuelve el resultado en la variable $data
       $data = $stmt->fetchAll( PDO::FETCH_ASSOC);
+
+      # Devuelve en la variable $count el numero de filas afectadas
       $count = $stmt->rowCount();
+
+      # Cerramos el cursor
       $stmt->closeCursor();
 
+      # Asignamos a una variable los datos que vamos a devolver a la llamada
       $return = array( 'success' => true, 'data' => $data, 'count' => $count);
     }
     catch (PDOException $e)
     {
+      # Si hay error lo guardamos en un fichero y devolvemos success = false y los datos del error
+      # 
       $_error = print_r( $e->getTrace(), true) . "\n" . $e->getMessage();
 
       error_log( date("Y-m-d H:i:s") . " - " . $_error . "\n", 3, static::$pathLogs."db_error.log");
@@ -147,11 +158,14 @@ class PDOClass
       );
     }
 
+    # Limpiamos variables utilizadas
     unset ( $stmt);
     unset( $db_conn);
 
+    # Devolvemos el resultado.
     return ( $return);
   }
+
 
   # Función para ejecutar sentencias (insert/update/delete) o cualquiera que no sea una select
   # Recibe un array de parametros
@@ -161,19 +175,28 @@ class PDOClass
   #
   public static function Execute( $params = array())
   {
-
+    # Recibimos la conexión por parametro y la ponemos en una variable
     $db_conn = $params['connection'];
 
     try
     {
+      # Preparamos la sentencia que queremos ejecutar que se pasa en el array params
       $stmt = $db_conn->prepare( $params['query']);
+
+      # Asignamos los parametros a la sentecia. Si no tiene parametros tendriamos que pasar un array vacio ( array() )
       $stmt->execute( $params['params'] );
+
+      # Devuelve en la variable $count el numero de filas afectadas
       $count = $stmt->rowCount();
 
+
+      # Asignamos a una variable los datos que vamos a devolver a la llamada
       $return = array( 'success' => true, 'count' => $count);
     }
     catch (PDOException $e)
     {
+      # Si hay error lo guardamos en un fichero y devolvemos success = false y los datos del error
+      # 
       $_error = print_r( $e->getTrace(), true) . "\n" . $e->getMessage();
 
       error_log( date("Y-m-d H:i:s") . " - " . $_error . "\n", 3, static::$pathLogs."db_error.log");
@@ -183,9 +206,11 @@ class PDOClass
       );
     }
 
+    # Limpiamos variables utilizadas
     unset ( $stmt);
     unset( $db_conn);
 
+    # Devolvemos el resultado.
     return ( $return);
 
   }
@@ -211,10 +236,10 @@ class PDOClass
 
   public static function Insert( $params = array())
   {
-
-    $data = array();
+    # Inicializamos las variables que vamos a utilizar
     $fields = $fields_values = $a_values = "";
 
+    # Recorremos la variable que tienen los campos de la tabla y asignamos el par field = valor
     foreach ( $params['fields'] as $key => $value) 
     {
       $fields .= $key . ",";
@@ -222,28 +247,38 @@ class PDOClass
       $a_values .= $value . ".:.";
     }
 
+    # Eliminamos los valores finales que no necesitamos en la consulta insert
     $fields  = substr( $fields, 0, strlen( $fields) - 1);
     $fields_values  = substr( $fields_values, 0, strlen( $fields_values) - 1);
     $a_values  = substr( $a_values, 0, strlen( $a_values) - 3);
 
 
+    # Recibimos la conexión por parametro y la ponemos en una variable
     $db_conn = $params['connection'];
 
     try
     {
-
+      # Creamos la sentencia Insert con los datos variables de la tabla, campos y valores
       $sql = "insert into " . $params['table'] . "( {$fields} ) values( ".$fields_values." )";
 
+      # Preparamos la consulta que ejecutaremos
       $stmt = $db_conn->prepare( $sql);
+
+      # Ejecutamos la consulta con los valores en un array
       $r = $stmt->execute( explode( ".:.", $a_values));
+
+      # Guardamos los valores de las filas afectadas
       $count = $stmt->rowCount();
 
-      $return = array( 'success' => true, 'data' => $data, 'count' => $count);
+      # Creamos la variable que vamos a devolver.
+      $return = array( 'success' => true, 'count' => $count);
 
     } 
     catch (PDOException $e)
     {
 
+      # Si hay error lo guardamos en un fichero y devolvemos success = false y los datos del error
+      #
       $_error = print_r( $e->getTrace(), true) . "\n" . $e->getMessage();
 
       error_log( date("Y-m-d H:i:s") . " - " . $_error . "\n", 3, static::$pathLogs."db_error.log");
@@ -254,9 +289,11 @@ class PDOClass
 
     }
 
+    # Limpiamos variables utilizadas
     unset( $stmt);
     unset( $db_conn);
 
+    # Devolvemos el resultado.
     return ( $return );
 
   }

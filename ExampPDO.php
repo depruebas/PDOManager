@@ -21,7 +21,7 @@
   # We get the connection to the bbdd in the variable
   $conn = PDOClass::Connection( $config);  
 
-  #depending on the argument executes one action or another
+  # Depending on the argument executes one action or another
   switch ( $argv[1]) 
   {
     case 'insert':
