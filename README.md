@@ -1,4 +1,4 @@
-# PDOManager
+# PDOClass.php
 Class and example of data access through PDO in PHP
 
 Connection class to bbdd with PDO drivers.<br>
