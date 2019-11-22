@@ -9,31 +9,35 @@ The way to use it in a PHP program is to add the PDOClass.php file to the beginn
 Example:
 
 // Array de configuración
-<br>
-...
+```
 $config = array(
   'dsn' => 'mysql:host=localhost;dbname=sakila;charset=utf8',<br><br>
   'username' => 'devuser',<br><br>
   'password' => 'mysql',<br><br>
 );
-...
+```
 <br><br>
 // To make the connection to the bbdd
+```
 $connection = PDOClass::Connection ( $config);
-
+```
 // Prepare the parameters for a SELECT statement
 // We have to send in the connection array the values for connection, 
 // query and parameters
+```
 $data['connection'] = $connection['data'];
-$data['query'] = "Select staff_id, first_name, last_name, email, username, 	
-										password From staff where staff_id = ?";
+$data['query'] = "Select staff_id, first_name, last_name, email, username, password From staff where staff_id = ?";
 $data['params'] = array( '11');
-
+```
 // Execute the query and return results in rows variable
+```
 $rows = PDOClass::ExecuteQuery( $data);
+```
 
 // Delete connection
+```
 $connection = null;
+```
 
 The results are expressed in an array.
 $rows will have the following outputs:
