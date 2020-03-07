@@ -267,11 +267,14 @@ class PDOClass
       # Ejecutamos la consulta con los valores en un array
       $r = $stmt->execute( explode( ".:.", $a_values));
 
+
+      $id = $db_conn->lastInsertID();
+
       # Guardamos los valores de las filas afectadas
       $count = $stmt->rowCount();
 
       # Creamos la variable que vamos a devolver.
-      $return = array( 'success' => true, 'count' => $count);
+      $return = array( 'success' => true, 'count' => $count, 'id' => $id);
 
     } 
     catch (PDOException $e)
