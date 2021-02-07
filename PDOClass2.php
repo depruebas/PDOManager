@@ -73,10 +73,13 @@
 class PDOClass2
 {
 
-  protected static $conn = null;
-  protected static $pathLogs = './logs/';
+  protected static $pathLogs = null;
 
-  function __construct() {}
+  function __construct() {
+
+    $pathLogs = dirname( dirname( __FILE__)) . '/logs/';
+
+  }
 
   public static function Connection( $config = array())
   {
@@ -93,41 +96,40 @@ class PDOClass2
 
     try
     {
-      self::$conn = new PDO( $config['dsn'], $config['username'], $config['password']);
-      self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+      $connection = new PDO( $config['dsn'], $config['username'], $config['password']);
+      $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-      return ( array( 'success' => true, 'data' => self::$conn));
+      return ( array( 'success' => true, 'data' => $connection));
 
     }
     catch (PDOException $e)
     {
-      print_r( $e);
-      die;
+
       $_error = print_r( $e->getTrace(), true) . "\n" . $e->getMessage();
 
-      error_log( date("Y-m-d H:i:s") . " - " . $_error . "\n", 3, static::$pathLogs."db_error.log");
+      $_error = array(
+        'trace' => $e->getTrace(),
+        'errormsg' => $e->getMessage(),
+      );
+
+      error_log( date("Y-m-d H:i:s") . " - " . print_r( $_error, true) . "\n", 3, static::$pathLogs."db_error.log");
       $return = array(
         'success' => false,
         'data' => $_error,
       );
-      return ( array( 'success' => false, 'data' => $return));
+
+      return ( $return);
     }
 
   }
 
-  public static function Close()
-  {
 
-    self::$conn = null;
-
-  }
-
-  public static function ExecuteQuery( $params = array())
+  public static function ExecuteQuery( $params = array(), $connection)
   {
 
    try
     {
-      $stmt = self::$conn->prepare( $params['query']);
+      $stmt = $connection->prepare( $params['query']);
       $stmt->execute( $params['params'] );
       $data = $stmt->fetchAll( PDO::FETCH_ASSOC);
       $count = $stmt->rowCount();
@@ -137,13 +139,18 @@ class PDOClass2
     }
     catch (PDOException $e)
     {
-      $_error = print_r( $e->getTrace(), true) . "\n" . $e->getMessage();
 
-      error_log( date("Y-m-d H:i:s") . " - " . $_error . "\n", 3, static::$pathLogs."db_error.log");
+      $_error = array(
+        'trace' => $e->getTrace(),
+        'errormsg' => $e->getMessage(),
+      );
+
+      error_log( date("Y-m-d H:i:s") . " - " . print_r( $_error, true) . "\n", 3, static::$pathLogs."db_error.log");
       $return = array(
         'success' => false,
         'data' => $_error,
       );
+
     }
 
     unset ( $stmt);
@@ -151,12 +158,12 @@ class PDOClass2
     return ( $return);
   }
 
-  public static function Execute( $params = array())
+  public static function Execute( $params = array(), $connection)
   {
 
     try
     {
-      $stmt = self::$conn->prepare( $params['query']);
+      $stmt = $connection->prepare( $params['query']);
       $stmt->execute( $params['params'] );
       $count = $stmt->rowCount();
 
@@ -164,9 +171,14 @@ class PDOClass2
     }
     catch (PDOException $e)
     {
-      $_error = print_r( $e->getTrace(), true) . "\n" . $e->getMessage();
 
-      error_log( date("Y-m-d H:i:s") . " - " . $_error . "\n", 3, static::$pathLogs."db_error.log");
+      //$_error = print_r( $e->getTrace(), true) . "\n" . print_r( array( 'ERRORMSG' => $e->getMessage()), true);
+      $_error = array(
+        'trace' => $e->getTrace(),
+        'errormsg' => $e->getMessage(),
+      );
+
+      error_log( date("Y-m-d H:i:s") . " - " . print_r( $_error, true) . "\n", 3, static::$pathLogs."db_error.log");
       $return = array(
         'success' => false,
         'data' => $_error,
@@ -179,13 +191,13 @@ class PDOClass2
 
   }
 
-  public static function Insert( $params = array())
+  public static function Insert( $params = array(), $connection)
   {
 
-    if ( empty( self::$conn))
+    if ( empty( $connection))
     {
       $config_db = ConfigClass::get("database.twitter");
-      self::Connection( $config_db);
+      $connection = self::Connection( $config_db);
     }
 
     $data = array();
@@ -208,19 +220,23 @@ class PDOClass2
 
       $sql = "insert into " . $params['table'] . "( {$fields} ) values( ".$fields_values." )";
 
-      $stmt = self::$conn->prepare( $sql);
+      $stmt = $connection->prepare( $sql);
       $r = $stmt->execute( explode( ".:.", $a_values));
       $count = $stmt->rowCount();
+      $id = $connection->lastInsertId();
 
-      $return = array( 'success' => true, 'data' => $data, 'count' => $count);
+      $return = array( 'success' => true, 'data' => $data, 'last_id' =>  $id, 'count' => $count);
 
     }
     catch (PDOException $e)
     {
 
-      $_error = print_r( $e->getTrace(), true) . "\n" . $e->getMessage();
+      $_error = array(
+        'trace' => $e->getTrace(),
+        'errormsg' => $e->getMessage(),
+      );
 
-      error_log( date("Y-m-d H:i:s") . " - " . $_error . "\n", 3, static::$pathLogs."db_error.log");
+      error_log( date("Y-m-d H:i:s") . " - " . print_r( $_error, true) . "\n", 3, static::$pathLogs."db_error.log");
       $return = array(
         'success' => false,
         'data' => $_error,
@@ -233,8 +249,6 @@ class PDOClass2
     return ( $return );
 
   }
-
-
 
 
 }
