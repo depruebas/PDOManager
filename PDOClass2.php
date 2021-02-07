@@ -1,9 +1,7 @@
 <?php
 
+/*****
 
-/*
-**
-**
   Connection class to bbdd with PDO drivers.
   Driver List: https://www.php.net/manual/es/pdo.drivers.php
 
@@ -65,9 +63,7 @@
   - data: a array with the query results
   - count: it's the number total of records of the query
 
-**
-**
-*/
+*****/
 
 
 class PDOClass2
